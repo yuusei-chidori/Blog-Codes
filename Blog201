@@ -1,0 +1,360 @@
+'''
+For Blog part 201
+'''
+###install.packages("xts")
+library("xts")
+###install.packages("zoo")
+library("zoo")
+###install.packages("TTR")
+library("TTR")
+###install.packages("quantmod")
+library("quantmod")
+###install.packages("XML")
+library("XML")
+###install.packages("reshape")
+library("reshape")
+###install.packages("ggplot2")
+library("ggplot2")
+###install.packages("dplyr")
+library("dplyr")
+###install.packages("quadprog")
+library("quadprog")
+
+### To avoid "mojibake in Windows environment
+###Sys.setlocale("LC_CTYPE","C")
+
+# http://www.dmjtmj-stock.com/entry/2016/12/21/000000
+# http://www.quantmod.com/examples/intro/
+# https://yahoo.uservoice.com/forums/382977-finance/suggestions/19322560-please-bring-back-the-api
+
+
+### Get Stock Price data from Google Finance in the US
+assets <- c("GOOG", "FB", "AAPL", "AMZN", "ORCL", "CRM")
+getSymbols(assets, src = "google", from='2016-01-01',to='2017-4-30')
+
+### Create a table of Opening Price stock data (weekly based)
+tech_hist_open <- tbl_df(cbind(  to.weekly(GOOG)$GOOG.Open
+                               , to.weekly(FB)$FB.Open
+                               , to.weekly(AAPL)$AAPL.Open 
+                               , to.weekly(AMZN)$AMZN.Open
+                               , to.weekly(ORCL)$ORCL.Open
+                               , to.weekly(CRM)$CRM.Open
+                              )
+                        )
+head(tech_hist_open)
+
+### Create a table of Closing Price stock data (weeky based)
+tech_hist_close <- tbl_df(cbind(   to.weekly(GOOG)$GOOG.Close
+                                 , to.weekly(FB)$FB.Close
+                                 , to.weekly(AAPL)$AAPL.Close
+                                 , to.weekly(AMZN)$AMZN.Close
+                                 , to.weekly(ORCL)$ORCL.Close
+                                 , to.weekly(CRM)$CRM.Close
+                                )
+                          )
+head(tech_hist_close)
+
+### Create a table of Daily Price stock data (weeky based)
+### as the mean of opening and closing price
+tech_hist_ave <- (tech_hist_close + tech_hist_open)/2
+colnames(tech_hist_ave) <- assets
+
+### Create a table of Daily Price Variation data (weeky based)
+### as the substruction / Difference of opening and closing price
+tech_hist_updown <- tech_hist_close - tech_hist_open
+colnames(tech_hist_updown) <- assets
+
+
+### Create a table of Daily return data (weeky based)
+tech_hist_rt <- tbl_df(cbind(  weeklyReturn(GOOG)
+                             , weeklyReturn(FB)
+                             , weeklyReturn(AAPL)
+                             , weeklyReturn(AMZN)
+                             , weeklyReturn(ORCL)
+                             , weeklyReturn(CRM)
+                            )
+                      )
+
+colnames(tech_hist_rt) <- assets
+head(tech_hist_rt)
+
+### Ploting Daily Stock Prices
+cols <- c("blue", "brown", "cadetblue", "deeppink3", "purple", "limegreen")
+ltys <- c(1, 1, 1, 1, 1, 1)
+
+### Separates
+par(mfcol = c(2, 3))
+plot(tech_hist_ave$GOOG, col = "blue", axes = T, xlab = "", ylab = "", type = "l"
+     , main = "Google's stock price")
+plot(tech_hist_ave$FB, col = "brown", axes = T, xlab = "", ylab = "", type = "l"
+     , main = "Face Book's stock price")
+plot(tech_hist_ave$AAPL, col = "cadetblue", axes = T, xlab = "", ylab = "", type = "l"
+     , main = "Apple's stock price")
+plot(tech_hist_ave$AMZN, col = "deeppink3", axes = T, xlab = "", ylab = "", type = "l"
+     , main = "Amazon's stock price")
+plot(tech_hist_ave$ORCL, col = "purple", axes = T, xlab = "", ylab = "", type = "l"
+     , main = "Oracle's stock price")
+plot(tech_hist_ave$CRM, col = "limegreen", axes = T, xlab = "", ylab = "", type = "l"
+     , main = "Salesforce's stock price")
+par(mfcol = c(1, 1))
+
+
+
+### In one box
+plot(tech_hist_ave$GOOG, col = "blue", axes = T, xlab = "", ylab = "", type = "l"
+     ,　xaxt="n", yaxt = "n"
+     , main = "Stock price of Tech Giants(amount - weekly)")
+par(new = T)
+plot(tech_hist_ave$FB, col = "brown", type = "l", ann = F, axes = F)
+par(new = T)
+plot(tech_hist_ave$AAPL, col = "cadetblue", type = "l", ann = F, axes = F)
+par(new = T)
+plot(tech_hist_ave$AMZN, col = "deeppink3", type = "l", ann = F, axes = F)
+par(new = T)
+plot(tech_hist_ave$ORCL, col = "purple", type = "l", ann = F, axes = F)
+par(new = T)
+plot(tech_hist_ave$CRM, col = "limegreen", type = "l", ann = F, axes = F)
+legend("bottomright", legend = assets, col = cols, lty = ltys, ncol = 3)
+
+
+
+
+cols <- c("blue", "brown", "cadetblue", "deeppink3", "purple", "limegreen")
+
+## Separates
+par(mfcol = c(2, 3))
+plot(tech_hist_rt$GOOG, col = cols[1], axes = T, xlab = "", ylab = "", ylim = c(-0.2, 0.2)
+     , main = "Returns on Google(weekly)", type = "l")
+plot(tech_hist_rt$FB, col = cols[2], axes = T, xlab = "", ylab = "", ylim = c(-0.2, 0.2)
+     , main = "Returns on FaceBook(weekly)", type = "l")
+plot(tech_hist_rt$AAPL, col = cols[3], axes = T, xlab = "", ylab = "", ylim = c(-0.2, 0.2)
+     , main = "Returns on Apple(weekly)", type = "l")
+plot(tech_hist_rt$AMZN, col = cols[4], axes = T, xlab = "", ylab = "", ylim = c(-0.2, 0.2)
+     , main = "Returns on Amazon(weekly)", type = "l")
+plot(tech_hist_rt$ORCL, col = cols[5], axes = T, xlab = "", ylab = "", ylim = c(-0.2, 0.2)
+     , main = "Returns on Oracle(weekly)", type = "l")
+plot(tech_hist_rt$CRM, col = cols[6], axes = T, xlab = "", ylab = "", ylim = c(-0.2, 0.2)
+     , main = "Returns on Salesforce(weekly)", type = "l")
+par(mfcol = c(1, 1))
+
+
+## In One
+plot(tech_hist_rt$GOOG, col = "blue", axes = T, xlab = "", ylab = "", ylim = c(-0.2, 0.2)
+     , type ="l"#,　xaxt="n", yaxt = "n"
+     , main = "Returns on Tech Giants(weekly)")
+par(new = T)
+plot(tech_hist_rt$FB, col = "brown", ylim = c(-0.2, 0.2), type = "l", ann = F, axes = F)
+par(new = T)
+plot(tech_hist_rt$AAPL, col = "cadetblue", ylim = c(-0.2, 0.2), type = "l", ann = F, axes = F)
+par(new = T)
+plot(tech_hist_rt$AMZN, col = "deeppink3", ylim = c(-0.2, 0.2), type = "l", ann = F, axes = F)
+par(new = T)
+plot(tech_hist_rt$ORCL, col = "purple", ylim = c(-0.2, 0.2), type = "l", ann = F, axes = F)
+par(new = T)
+plot(tech_hist_rt$CRM, col = "limegreen", ylim = c(-0.2, 0.2), type = "l", ann = F, axes = F)
+legend("bottomright", legend = assets, col = cols, lty = ltys, ncol = 3)
+
+
+### To Histogram data
+par(mfcol = c(1, 2))
+plot(tech_hist_rt$GOOG, col = cols[1], axes = T, xlab = "", ylab = "", ylim = c(-0.2, 0.2)
+     , main = "Returns on Google(weekly)", type = "o")
+hist(tech_hist_rt$GOOG, main = paste("Hist Return of", assets[1]), freq = FALSE
+     , xlim = c(-0.2, 0.2), breaks = 15, xlab = "")
+lines(density(tech_hist_rt$GOOG), col = "orange", lwd =2)
+
+# Histogram data
+par(mfcol = c(2, 3))
+hist(tech_hist_rt$GOOG, main = paste("Hist Return of", assets[1]), freq = FALSE
+     , xlim = c(-0.2, 0.2), breaks = 15, xlab ="")
+lines(density(tech_hist_rt$GOOG), col = "orange", lwd =2)
+hist(tech_hist_rt$FB, main = paste("Hist Return of", assets[2]), freq = FALSE
+     , xlim = c(-0.2, 0.2), breaks = 15, xlab ="")
+lines(density(tech_hist_rt$FB), col = "orange", lwd =2)
+hist(tech_hist_rt$AAPL, main = paste("Hist Return of", assets[3]), freq = FALSE
+     , xlim = c(-0.2, 0.2), breaks = 15, xlab ="")
+lines(density(tech_hist_rt$AAPL), col = "orange", lwd =2)
+hist(tech_hist_rt$AMZN, main = paste("Hist Return of", assets[4]), freq = FALSE
+     , xlim = c(-0.2, 0.2), breaks = 15, xlab ="")
+lines(density(tech_hist_rt$AMZN), col = "orange", lwd =2)
+hist(tech_hist_rt$ORCL, main = paste("Hist Return of", assets[5]), freq = FALSE
+     , xlim = c(-0.2, 0.2), breaks = 15, xlab ="")
+lines(density(tech_hist_rt$ORCL), col = "orange", lwd =2)
+hist(tech_hist_rt$CRM, main = paste("Hist Return of", assets[6]), freq = FALSE
+     , xlim = c(-0.2, 0.2), breaks = 15, xlab ="")
+lines(density(tech_hist_rt$CRM), col = "orange", lwd =2)
+par(mfcol = c(1, 1))          
+          
+
+### Means and Variances ?matrix
+par(mfcol = c(1, 2))        
+mean_var <- matrix(data = 1:12, nrow = 6, ncol = 2)
+rownames(mean_var) <- assets; colnames(mean_var) <- c("mean", "variance")
+mean_var[1, 1] <- mean(tech_hist_rt$GOOG);  mean_var[1, 2] <- var(tech_hist_rt$GOOG)
+mean_var[2, 1] <- mean(tech_hist_rt$FB);    mean_var[2, 2] <- var(tech_hist_rt$FB)
+mean_var[3, 1] <- mean(tech_hist_rt$AAPL);  mean_var[3, 2] <- var(tech_hist_rt$AAPL)
+mean_var[4, 1] <- mean(tech_hist_rt$AMZN);  mean_var[4, 2] <- var(tech_hist_rt$AMZN)
+mean_var[5, 1] <- mean(tech_hist_rt$ORCL);  mean_var[5, 2] <- var(tech_hist_rt$ORCL)
+mean_var[6, 1] <- mean(tech_hist_rt$CRM);   mean_var[6, 2] <- var(tech_hist_rt$CRM)
+barplot(mean_var[,1], main = "mean"); barplot(mean_var[,2], main = "variances")
+par(mfcol = c(1, 1))          
+
+
+#### Stock Blending-----
+cols <- c("blue", "brown", "cadetblue")
+ltys <- c(1, 1, 1)
+assets <- c("GOOG", "FB", "AAPL")
+          
+plot(tech_hist_rt$GOOG, col = cols[1], axes = T, xlab = "", ylab = ""
+     , type = "l", ylim = c(-0.2, 0.2) 
+     , main = "Return of three Tech Giants(amount - weekly)")
+par(new = T)
+plot(tech_hist_rt$FB, col = cols[2], ylim = c(-0.2, 0.2), axes = F, xlab = "", ylab = "", type = "l")
+par(new = T)
+plot(tech_hist_rt$AAPL, col = cols[3], ylim = c(-0.2, 0.2), axes = F, xlab = "", ylab = "", type = "l")
+legend("bottomright", legend = assets, col = cols, lty = ltys, ncol = 3)
+
+### First Blending
+tech_hist_sum <- 1:nrow(tech_hist_rt)
+for(i in 1:nrow(tech_hist_rt)){tech_hist_sum[i] <- sum(tech_hist_rt$GOOG[i]
+                                                      , tech_hist_rt$FB[i]
+                                                      , tech_hist_rt$AAPL[i])
+                              }
+
+          
+          
+plot(tech_hist_sum, col = "red", axes = T, xlab = "", ylab = "", ylim = c(-0.2, 0.2)
+    , main = "Three Tech Giants' aggregate stock return(amount - weekly)"
+    , type = "l"
+    )
+          
+### Comparison with "ABB"          
+getSymbols("ABB", src = "google", from='2016-01-01',to='2017-4-30')
+plot(tech_hist_sum, col = "red", axes = T, xlab = "", ylab = "", ylim = c(-0.2, 0.2)
+                  , main = "Blend and ABB's stock return-comparison"
+                  , type = "l"
+    )
+par(new = T)
+plot(weeklyReturn(ABB), col = "seagreen", axes = T
+                      , xlab = "", ylab = "", ylim = c(-0.2, 0.2)
+                      , type = "l"
+    )
+legend("bottomright", legend = c("BLND","ABB"), col = c("red", "seagreen"), lty = c(1,1), ncol = 2)
+          
+          
+### Second Blending
+tech_hist_sum2 <- 1:nrow(tech_hist_rt)
+for(i in 1:nrow(tech_hist_rt)){tech_hist_sum2[i] <- sum(tech_hist_rt$GOOG[i]
+                                                        , tech_hist_rt$FB[i]
+                                                        , tech_hist_rt$AAPL[i]
+                                                        , weeklyReturn(ABB)[i]
+                                                        )
+                              }
+          
+          
+plot(tech_hist_sum, col = "red", axes = T, xlab = "", ylab = "", ylim = c(-0.2, 0.2)
+                  , main = "Blended, ABB and New-Blended stock return-comparison"
+                  , type = "l"
+    )
+par(new = T)
+plot(weeklyReturn(ABB), col = "seagreen", axes = T, xlab = "", ylab = "", ylim = c(-0.2, 0.2)
+                      , type = "l"
+    )
+par(new = T)
+plot(tech_hist_sum2, col = "black", axes = T, xlab = "", ylab = "", ylim = c(-0.2, 0.2)
+                   , type = "l"
+    )
+legend("bottomright", legend = c("BLND","ABB", "NEW_BLND")
+      , col = c("red", "seagreen", "black"), lty = c(1,1,1), ncol = 3)
+          
+          
+          
+#### Histgram Comp
+par(mfcol = c(1, 2))
+tech_var <- round(var(tech_hist_sum), digits = 3)
+tech_var2 <-round(var(tech_hist_sum2), digits = 3)
+tech_mean <- round(mean(tech_hist_sum), digits = 3)
+tech_mean2 <-round(mean(tech_hist_sum2), digits = 3)
+
+hist(tech_hist_sum, main = paste("'BLND' AVE = ", tech_mean, "VAR = ",  tech_var)
+               , freq = FALSE, breaks = 15
+               , xlim = c(-0.2, 0.2), ylim = c(0, 10)
+               , xlab = "", ylab = "")
+lines(density(tech_hist_sum), col = "orange", lwd =2)
+hist(tech_hist_sum2, main = paste("'NEW_BLND' AVE = ", tech_mean2, "VAR = ",  tech_var2)
+               , freq = FALSE, breaks = 15
+               , xlim = c(-0.2, 0.2), ylim = c(0, 10)
+               , xlab = "", ylab = "")
+lines(density(tech_hist_sum2), col = "orange", lwd =2)
+          
+par(mfcol = c(1, 1))
+
+hist(tech_hist_sum, main = "'BLND' and 'NEW_BLND' comparison"
+     , freq = FALSE, breaks = 15
+     , xlim = c(-0.2, 0.2), ylim = c(0, 10)
+     , xlab = "", ylab = "", col = "seagreen")
+lines(density(tech_hist_sum), col = "green", lwd =2)
+hist(tech_hist_sum2, main = paste("'NEW_BLND' AVE = ", tech_mean2, "VAR = ",  tech_var2)
+     , freq = FALSE, breaks = 15
+     , xlim = c(-0.2, 0.2), ylim = c(0, 10)
+     , xlab = "", ylab = "", col = "yellow"
+     , add = T)
+lines(density(tech_hist_sum2), col = "orange", lwd =2)
+legend("topleft", legend = c("BLND", "NEW_BLND")
+       , col = c("green", "orange"), lty = c(1, 1), ncol = 1)
+
+
+
+### Solving with Simplex Method ---
+'''
+The problem:　
+minimize xR = (x^t) %*% Q %*% x + 1/2 dvec %*% x + c
+subject to 
+        sum^{6}_{1} x_i = 1,
+        #sum^{6}_{1} x_i * r_i >= 0,
+        for all x_i >= 0
+'''
+### Setting 
+Q <- cov(tech_hist_rt)
+r <- mean_var[,1]
+K <- matrix(c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1), 2, 6)
+I <- matrix(0, 6, 6)
+diag(I) <- 1
+zero_vector <- c(0, 0, 0, 0, 0, 0)
+#x <- c(1, 0, 0, 0, 0, 0)
+
+# solve.QP(Dmat, dvec, Amat, bvec = bvec)
+Dmat <- Q
+dvec <- c(0, 0, 0, 0, 0, 0)
+Amat <- t(rbind(K, I))
+bvec <- c(1, -1, zero_vector)
+markovitz <- solve.QP(Dmat, dvec, Amat, bvec=bvec)
+sum(markovitz$solution)
+
+
+### Confirmation
+m_s <- markovitz$solution
+
+tech_hist_opt <- 1:nrow(tech_hist_rt)
+for(i in 1:nrow(tech_hist_rt)){tech_hist_opt[i] <- sum(tech_hist_rt$GOOG[i] * m_s[1]
+                                                        , tech_hist_rt$FB[i] * m_s[2]
+                                                        , tech_hist_rt$AAPL[i] * m_s[3]
+                                                        , tech_hist_rt$AMZN[i] * m_s[4]
+                                                       , tech_hist_rt$ORCL[i] * m_s[5]
+                                                       , tech_hist_rt$CRM[i] * m_s[6]
+                                                       )
+                              }
+
+plot(tech_hist_opt
+     , xlab = "", ylab = "return"
+     , ylim = c(-0.2, 0.2)
+     , type = "o", col = "red"
+     , main = "The optimal portfolio allocated on the six Tech Giants"
+     )
+
+hist(tech_hist_opt, main = "Hist of the optimal portfolio", freq = FALSE
+     , xlim = c(-0.2, 0.2), breaks = 15, xlab ="")
+lines(density(tech_hist_opt), col = "orange", lwd =2)
+
+summary(tech_hist_opt)
+sum(tech_hist_opt)
