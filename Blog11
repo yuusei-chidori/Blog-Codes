@@ -1,0 +1,53 @@
+'''
+Simulation Codes of WLLN and SLLN
+'''
+
+### Weak Law of Large Number ---
+p <- 1:6; names(p) <- c("p5","p10","p50","p100","p500","p1000")
+
+set.seed(123)
+t <- 0.01
+k <- 1:100
+for(i in 1:100000){k[i] <- 0.01 < mean(rnorm(5))}; k <- as.integer(k); p5 <- (sum(k)/10000000)
+k <- 1:100
+for(i in 1:100000){k[i] <- 0.01 < mean(rnorm(10))}; k <- as.integer(k);  p10 <- (sum(k)/10000000)
+k <- 1:100
+for(i in 1:100000){k[i] <- 0.01 < mean(rnorm(50))}; k <- as.integer(k);  p50 <- (sum(k)/10000000)
+k <- 1:100
+for(i in 1:100000){k[i] <- 0.01 < mean(rnorm(100))}; k <- as.integer(k);  p100 <- (sum(k)/10000000)
+k <- 1:100
+for(i in 1:100000){k[i] <- 0.01 < mean(rnorm(500))}; k <- as.integer(k);  p500 <- (sum(k)/100000)
+k <- 1:100
+for(i in 1:100000){k[i] <- 0.01 < mean(rnorm(1000))}; k <- as.integer(k);  p1000 <- (sum(k)/100000)
+
+p1 <- rbind(p5, p10, p50, p100, p500, p1000)
+plot(p1, type = "o")
+
+p <- cbind(p, p1)
+plot(p[,1], type = "o", col = "red", ylim = c(0.37, 0.5), ylab = "Probability")
+lines(p[,2], type = "o", col = "blue", ylim = c(0.37, 0.5))
+lines(p[,3], type = "o", col = "black", ylim = c(0.37, 0.5))
+
+k <- 1:100
+for(i in 1:100000){k[i] <- 0.01 < mean(rnorm(100000))}; k <- as.integer(k);  p100000 <- (sum(k)/100000)
+p100000
+
+
+
+### Strong Law of Large Number ---
+list <- 1:1000
+k <- 1:1000
+for(j in 1:100)
+  {
+  for(i in 1:1000){k[i] <- mean(rnorm(i))}
+  list <- cbind(list, k)
+}
+list <- list[, 2:101]
+s <- 1:1000
+for(i in 1:1000){s[i] <- mean(list[i,])}
+
+plot(s, type = "l", ylab = "Arithmetic Mean")
+
+k <- 1:3000
+for(j in 1:3000){k[j] <- sum(rnorm(100000))/sqrt(100000)}
+hist(k, main = "3000 Samples' Histogram of 100000 samples' mean", xlim = c(-4, 4))
