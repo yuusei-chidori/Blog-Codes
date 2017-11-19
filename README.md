@@ -1,2 +1,2 @@
 # Blog-Codes
-Codes list as a supplementary material of my Blog
+A list of codes as a supplementary material for my Blogs
